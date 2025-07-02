@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore local application properties containing sensitive data
+src/main/resources/application-local.properties

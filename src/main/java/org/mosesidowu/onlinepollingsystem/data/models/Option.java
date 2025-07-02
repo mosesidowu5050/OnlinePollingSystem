@@ -12,7 +12,9 @@ import lombok.Setter;
 @Table(name = "options")
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class Option {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(nullable = false)
@@ -22,7 +24,7 @@ public class Option {
     private String text;
 
     @Column(nullable = false)
-    private int voteCount;
+    private int voteCount = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "poll_id", nullable = false)
