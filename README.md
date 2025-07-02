@@ -1,55 +1,107 @@
-Simple Online Polling System
-Introduction
-The Simple Online Polling System is a web application for creating and participating in polls. It demonstrates modern Java backend development using OOP, layered architecture, and secure Google OAuth 2.0 authentication with a PostgreSQL database. A React frontend will consume its APIs.
+🗳️ Simple Online Polling System
+🧩 Introduction
+The Simple Online Polling System is a full-stack web application that enables users to create, manage, and participate in polls. It showcases modern Java backend development using OOP principles, layered architecture, and secure Google OAuth 2.0 authentication. The backend is built with Spring Boot and PostgreSQL, while a React frontend is planned for API consumption.
 
-Features
-User Authentication: Secure login via Google OAuth 2.0.
+🚀 Features
+👥 User Authentication
+Secure login using Google OAuth 2.0
 
-Roles: Voter (vote on polls) and Admin (create/manage polls).
+JWT-based session handling for API access
 
-Poll Management (Admin): Create, view, edit, delete, and close polls. View results.
+🧑‍💼 User Roles
+Admin: Create, edit, delete, close polls; view poll results
 
-Voting (Voter): View active polls, cast a single vote per poll, and view results.
+Voter: Vote on active polls and view results
 
-Technology Stack
-Backend: Java 17+, Spring Boot, Spring Security, Spring Data JPA, Maven, Lombok.
+📊 Poll Management (Admin)
+Create, edit, delete, and close polls
 
-Database: PostgreSQL.
+View real-time poll statistics (planned)
 
-Frontend: React (coming soon).
+🗳️ Voting (Voter)
+View active polls
 
-Authentication: Google OAuth 2.0, JWTs for API authentication.
+Vote once per poll
 
-Architecture
-Uses a layered architecture (Presentation, Service, Data Access, Domain) for clear separation of concerns, applying OOP principles like encapsulation, abstraction, inheritance, and polymorphism.
+View poll results
 
-Getting Started (Backend)
-Clone: git clone https://github.com/your-username/simple-polling-system.git
+🛠️ Technology Stack
+Backend: Java 21, Spring Boot, Spring Security, Spring Data JPA, Maven, Lombok
 
-Database: Set up PostgreSQL (polling_db), user, and configure src/main/resources/application.properties.
+Database: PostgreSQL
 
-Google OAuth: Register a "Web application" Client ID in Google Cloud Console. Add client-id and client-secret to application.properties. Set Authorized redirect URIs to http://localhost:8080/login/oauth2/code/google.
+Authentication: Google OAuth 2.0, JWT
 
-Run: cd simple-polling-system/backend then mvn clean install and mvn spring-boot:run.
+Frontend: React (coming soon)
 
-API Endpoints (Key Examples)
-GET /oauth2/authorization/google: Initiate Google OAuth.
+🧱 Architecture
+This project follows a Layered Architecture for better separation of concerns:
 
-GET /api/users/me: Get current user profile.
+Presentation Layer – Controllers & API handling
 
-POST /api/auth/logout: Log out.
+Service Layer – Business logic
 
-POST /api/polls: Create poll (Admin).
+Data Access Layer – Repositories & persistence
 
-GET /api/polls: Get active polls.
+Domain Layer – Core entities & models
 
-POST /api/polls/{pollId}/vote: Cast vote (Voter).
+Applies core OOP principles:
 
-Future Enhancements
-More OAuth providers.
+Encapsulation
 
-Admin dashboard UI.
+Abstraction
 
-Advanced poll types.
+Inheritance
 
-Real-time results (WebSockets).
+Polymorphism
+
+⚙️ Getting Started (Backend)
+1. Clone the Repository
+bash
+Copy
+Edit
+git clone https://github.com/your-username/simple-polling-system.git
+2. Configure the Database
+Create a PostgreSQL database: polling_db
+
+Create a user with appropriate privileges
+
+Update src/main/resources/application.properties with DB credentials
+
+3. Set Up Google OAuth
+Register a project in Google Cloud Console
+
+Create OAuth 2.0 credentials (Web application)
+
+Add your client-id and client-secret to application.properties
+
+Set Authorized Redirect URI:
+
+bash
+Copy
+Edit
+http://localhost:8080/login/oauth2/code/google
+4. Run the Backend
+bash
+Copy
+Edit
+cd simple-polling-system/backend
+mvn clean install
+mvn spring-boot:run
+📡 Sample API Endpoints
+Method	Endpoint	Description
+GET	/oauth2/authorization/google	Initiate Google OAuth login
+GET	/api/users/me	Get current user profile
+POST	/api/auth/logout	Log out user
+POST	/api/polls	Create a new poll (Admin)
+GET	/api/polls	Get all active polls
+POST	/api/polls/{pollId}/vote	Cast vote on a poll (Voter)
+
+🔮 Future Enhancements
+Support for more OAuth providers (GitHub, Facebook, etc.)
+
+Admin dashboard UI
+
+Multiple poll types (checkbox, ranking, etc.)
+
+Real-time vote updates using WebSockets
