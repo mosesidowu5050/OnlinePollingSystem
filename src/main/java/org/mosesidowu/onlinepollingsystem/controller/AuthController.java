@@ -7,18 +7,32 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
-@RequestMapping("/api/oauth2")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final IUserService userService;
 
     @GetMapping("/status")
-    public ResponseEntity<String> getAuthStatus() {
-        String googleLoginUrl = "/oauth2/authorization/google";
-        return ResponseEntity.ok("Authentication service is running. " +
-                "To initiate Google OAuth login, redirect to: " + googleLoginUrl);
+    public ResponseEntity<Map<String, String>> getAuthStatus() {
+        Map<String, String> response = new HashMap<>();
+        response.put("status", "Authentication service is operational.");
+        response.put("googleLoginUrl", "/oauth2/authorization/google");
+        response.put("logoutUrl", "/api/auth/logout");
+
+        return ResponseEntity.ok(response);
     }
 
+
+    @GetMapping("/google-login-url")
+    public ResponseEntity<Map<String, String>> getGoogleLoginUrl() {
+        Map<String, String> response = new HashMap<>();
+        response.put("url", "/oauth2/authorization/google");
+        response.put("description", "Login through your Google email.");
+
+        return ResponseEntity.ok(response);
+    }
 }
