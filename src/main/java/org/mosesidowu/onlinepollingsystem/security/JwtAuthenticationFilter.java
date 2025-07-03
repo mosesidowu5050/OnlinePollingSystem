@@ -1,34 +1,30 @@
 package org.mosesidowu.onlinepollingsystem.security;
 
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.mosesidowu.onlinepollingsystem.exception.UserException;
-import org.mosesidowu.onlinepollingsystem.services.JwtService;
+import org.mosesidowu.onlinepollingsystem.data.models.User;
+import org.mosesidowu.onlinepollingsystem.data.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-@Component
+
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
-    private final JwtService jwtService;
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
 
 
@@ -38,59 +34,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws IOException, ServletException {
 
-        String path = request.getServletPath();
-        if (path.startsWith("/api/auth/")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String email = null;
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-
-            try {
-                email = jwtUtil.extractUsername(token);
-            } catch (Exception e) {
-                System.out.println("JWT parsing error: " + e.getMessage());
-            }
-        }
 
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtService.isBlacklisted(token)) {
-                throw new UserException("Token has been invalidated (logged out)");
-            }
+        try {
+            String jwt = getJwtFromRequest(request);
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
+                Long userId = jwtTokenProvider.getUserIdFromJWT(jwt);
 
-            if (jwtUtil.validateToken(token, userDetails)) {
-                Claims claims = jwtUtil.extractClaims(token);
-                Object rawRoles = claims.get("roles");
+                if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    Optional<User> userOptional = userRepository.findById(userId);
 
-                List<GrantedAuthority> authorities = List.of();
+                    if (userOptional.isPresent()) {
+                        User user = userOptional.get();
+                        UserDetailsImpl userDetails = new UserDetailsImpl(user);
 
-                if (rawRoles instanceof List<?>) {
-                    authorities = ((List<?>) rawRoles).stream()
-                            .filter(role -> role instanceof String)
-                            .map(role -> new SimpleGrantedAuthority((String) role))
-                            .collect(Collectors.toList());
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
 
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        logger.debug("Successfully authenticated user: {}", userDetails.getUsername());
+                    } else {
+                        logger.warn("User with ID {} found in JWT but not in database.", userId);
+                    }
                 }
-
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(email, null, authorities);
-
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("✅ Security context set with authorities: " + authToken.getAuthorities());
-
             }
+        } catch (Exception ex) {
+            logger.error("Could not set user authentication in security context: {}", ex.getMessage(), ex);
         }
 
         filterChain.doFilter(request, response);
     }
+
+
+    private String getJwtFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
 }

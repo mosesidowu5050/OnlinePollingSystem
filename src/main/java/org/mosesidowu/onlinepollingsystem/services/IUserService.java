@@ -8,8 +8,8 @@ public interface IUserService {
 
     UserResponseDTO registerOAuthUser(OAuth2User user);
 
-    User findByEmail(String email);
+    UserResponseDTO  findByEmail(String email);
 
-    User findById(Long id);
+    UserResponseDTO findById(Long id);
 
 }
