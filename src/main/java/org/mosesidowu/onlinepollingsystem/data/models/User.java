@@ -20,7 +20,13 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    private String oauth2Id;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

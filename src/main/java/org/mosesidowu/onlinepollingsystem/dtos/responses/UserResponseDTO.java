@@ -7,8 +7,10 @@ import org.mosesidowu.onlinepollingsystem.data.models.Role;
 public class UserResponseDTO {
 
     private Long id;
+    private String token;
     private String email;
     private String name;
+    private String message;
     private Role role;
 
 }
