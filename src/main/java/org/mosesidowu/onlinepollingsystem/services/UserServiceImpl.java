@@ -6,6 +6,7 @@ import org.mosesidowu.onlinepollingsystem.data.models.User;
 import org.mosesidowu.onlinepollingsystem.data.repository.UserRepository;
 import org.mosesidowu.onlinepollingsystem.dtos.responses.UserResponseDTO;
 import org.mosesidowu.onlinepollingsystem.exception.UserNotFoundException;
+import org.mosesidowu.onlinepollingsystem.security.JwtTokenProvider;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import static org.mosesidowu.onlinepollingsystem.util.UserMapper.*;
 public class UserServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Override
     public UserResponseDTO registerOAuthUser(OAuth2User oauth2User) {

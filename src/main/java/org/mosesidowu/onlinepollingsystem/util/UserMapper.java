@@ -6,11 +6,7 @@ import org.mosesidowu.onlinepollingsystem.dtos.responses.UserResponseDTO;
 public class UserMapper {
 
     public static UserResponseDTO getRegisteredUserResponse(User savedUser) {
-        UserResponseDTO userResponseDTO = new UserResponseDTO();
-        userResponseDTO.setId(savedUser.getId());
-        userResponseDTO.setEmail(savedUser.getEmail());
-        userResponseDTO.setName(savedUser.getName());
-        userResponseDTO.setRole(savedUser.getRole());
+        UserResponseDTO userResponseDTO = getResponseDTO(savedUser);
         userResponseDTO.setMessage("User registered successfully via OAuth");
 
         return userResponseDTO;
