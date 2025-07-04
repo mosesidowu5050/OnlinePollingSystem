@@ -27,12 +27,12 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UserException("User not found"));
 
         List<GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority(user.getRole().name())
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
         );
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
-                user.getEmail(),
+                user.getOauth2Id(),
                 authorities
         );
     }
