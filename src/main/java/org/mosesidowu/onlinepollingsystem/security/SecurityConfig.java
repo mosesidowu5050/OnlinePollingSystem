@@ -44,6 +44,8 @@ public class SecurityConfig {
     private final IUserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
+
+
     public SecurityConfig(UserRepository userRepository, IUserService userService, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
         this.userService = userService;
@@ -56,14 +58,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        // Order matters: More specific permitAll() rules first
-                        .requestMatchers("/oauth2/**", "/login/**", "/error").permitAll() // OAuth2 and error pages
-                        .requestMatchers("/auth/**").permitAll() // Explicitly permit /auth/status and any other /auth paths
-                        // Role-based access for API endpoints
-                        .requestMatchers("/api/polls/**").hasRole(Role.ADMIN.name().substring(5))
-                        .requestMatchers("/api/votes/**").hasRole(Role.VOTER.name().substring(5))
-                        // All other requests require authentication
-                        .anyRequest().authenticated() // This should come last
+                         .requestMatchers("/oauth2/**", "/login/**", "/error").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/polls/**").hasRole("ADMIN")
+                        .requestMatchers("/api/votes/**").hasRole("VOTER")
+                        .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oauth2AuthenticationSuccessHandler())
@@ -87,7 +86,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow requests from your React frontend's origin(s)
         configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
@@ -127,7 +125,7 @@ public class SecurityConfig {
                 );
                 String token = jwtTokenProvider.generateToken(jwtAuth);
 
-                String redirectUrl = "http://localhost:3000/oauth2/redirect?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8.toString());
+                String redirectUrl = "http://localhost:8086/oauth2/redirect?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8.toString());
                 response.sendRedirect(redirectUrl);
             }
         };

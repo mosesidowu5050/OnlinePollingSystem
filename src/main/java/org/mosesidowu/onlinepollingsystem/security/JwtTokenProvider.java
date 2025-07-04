@@ -70,14 +70,15 @@ public class JwtTokenProvider {
         return extractClaims(token).getExpiration();
     }
 
-    public List<String> extractRoles(String token) {
+    public String extractRoles(String token) {
         Claims claims = extractClaims(token);
-        return claims.get("roles", List.class);
+        return extractClaims(token).get("role", String.class);
     }
 
     Claims extractClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(signingKey)
+                .setAllowedClockSkewSeconds(30)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
