@@ -2,19 +2,21 @@ package org.mosesidowu.onlinepollingsystem.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import org.mosesidowu.onlinepollingsystem.config.CustomOAuth2User;
-import org.mosesidowu.onlinepollingsystem.exception.PollingSystemException;
+import lombok.Getter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 @Component
 public class JwtTokenProvider {
@@ -24,10 +26,12 @@ public class JwtTokenProvider {
     @Value("${app.jwt.secret}")
     private String jwtSecret;
 
+    @Getter
     @Value("${app.jwt.expiration-in-ms}")
     private long jwtExpirationInMs;
 
     private Key signingKey;
+
 
     @PostConstruct
     public void init() {
@@ -36,27 +40,14 @@ public class JwtTokenProvider {
     }
 
 
-    public String generateToken(Authentication authentication) {
-        Long userId;
-        String roleName;
-
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof CustomOAuth2User customOAuth2User) {
-            userId = customOAuth2User.getUserId();
-            roleName = customOAuth2User.getRole().name();
-        } else if (principal instanceof UserDetailsImpl customUserDetails) {
-            userId = customUserDetails.getId();
-            roleName = customUserDetails.getAuthorities().iterator().next().getAuthority();
-        } else throw new PollingSystemException("Unsupported principal type for JWT generation");
-
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+    public String generateToken(Long userId, Collection<? extends GrantedAuthority> authorities) {
+        String role = authorities.iterator().next().getAuthority();
 
         return Jwts.builder()
-                .setSubject(Long.toString(userId))
-                .claim("role", roleName)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .setSubject(String.valueOf(userId))
+                .claim("role", role)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs)) // 1 hour
                 .signWith(signingKey, SignatureAlgorithm.HS512)
                 .compact();
     }
@@ -70,14 +61,15 @@ public class JwtTokenProvider {
         return extractClaims(token).getExpiration();
     }
 
-    public List<String> extractRoles(String token) {
+    public String extractRoles(String token) {
         Claims claims = extractClaims(token);
-        return claims.get("roles", List.class);
+        return extractClaims(token).get("role", String.class);
     }
 
     Claims extractClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(signingKey)
+                .setAllowedClockSkewSeconds(30)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

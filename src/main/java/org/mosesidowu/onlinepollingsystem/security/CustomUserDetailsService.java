@@ -21,18 +21,19 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findUsersByEmail(email)
                 .orElseThrow(() -> new UserException("User not found"));
 
         List<GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority(user.getRole().name())
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
         );
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
-                user.getEmail(),
+                user.getName(),
                 authorities
         );
     }
