@@ -4,31 +4,31 @@ import lombok.Getter;
 import org.mosesidowu.onlinepollingsystem.data.models.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+public class CustomOAuth2User implements OidcUser {
 
-public class CustomOAuth2User implements OAuth2User {
-
-    private OAuth2User oauth2User;
+    private final OidcUser oidcUser;
     @Getter
-    private Long userId;
+    private final Long userId;
     @Getter
-    private Role role;
+    private final Role role;
 
-    public CustomOAuth2User(OAuth2User oauth2User, Long userId, Role role) {
-        this.oauth2User = oauth2User;
+    public CustomOAuth2User(OidcUser oidcUser, Long userId, Role role) {
+        this.oidcUser = oidcUser;
         this.userId = userId;
         this.role = role;
     }
 
     @Override
     public Map<String, Object> getAttributes() {
-        return oauth2User.getAttributes();
+        return oidcUser.getAttributes();
     }
 
     @Override
@@ -38,6 +38,21 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public String getName() {
-        return oauth2User.getName();
+        return oidcUser.getName();
+    }
+
+    @Override
+    public OidcUserInfo getUserInfo() {
+        return oidcUser.getUserInfo();
+    }
+
+    @Override
+    public OidcIdToken getIdToken() {
+        return oidcUser.getIdToken();
+    }
+
+    @Override
+    public Map<String, Object> getClaims() {
+        return oidcUser.getClaims();
     }
 }

@@ -23,7 +23,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public UserResponseDTO registerOAuthUser(OAuth2User oauth2User) {
-        getOauthResponse result = getGetOauthResponse(oauth2User);
+        getOauthResponse result = extractOauthInfo(oauth2User);
         User user = confirmRegisteredUser(result);
         User savedUser = userRepository.save(user);
 
@@ -73,7 +73,7 @@ public class UserServiceImpl implements IUserService {
     }
 
 
-    private static getOauthResponse getGetOauthResponse(OAuth2User oauth2User) {
+    private static getOauthResponse extractOauthInfo(OAuth2User oauth2User) {
         String email = oauth2User.getAttribute("email");
         String name = oauth2User.getAttribute("name");
         String oauth2Id = oauth2User.getName();

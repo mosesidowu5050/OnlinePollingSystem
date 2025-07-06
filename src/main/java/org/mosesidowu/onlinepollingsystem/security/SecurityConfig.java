@@ -1,6 +1,7 @@
 package org.mosesidowu.onlinepollingsystem.security;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import org.mosesidowu.onlinepollingsystem.config.CustomOAuth2User;
 import org.mosesidowu.onlinepollingsystem.data.models.Role;
 import org.mosesidowu.onlinepollingsystem.data.repository.UserRepository;
@@ -12,10 +13,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -58,7 +62,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                         .requestMatchers("/oauth2/**", "/login/**", "/error").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/**", "/error").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/polls/**").hasRole("ADMIN")
                         .requestMatchers("/api/votes/**").hasRole("VOTER")
@@ -68,6 +72,7 @@ public class SecurityConfig {
                         .successHandler(oauth2AuthenticationSuccessHandler())
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oauth2UserService())
+                                .oidcUserService(oidcUserService())
                         )
                 )
                 .sessionManagement(session -> session
@@ -101,40 +106,65 @@ public class SecurityConfig {
         DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
         return userRequest -> {
             OAuth2User oauth2User = delegate.loadUser(userRequest);
+            if (!(oauth2User instanceof OidcUser oidcUser)) {
+                throw new OAuth2AuthenticationException("OAuth2User is not an OidcUser");
+            }
+
             userService.registerOAuthUser(oauth2User);
 
             org.mosesidowu.onlinepollingsystem.data.models.User internalUser =
-                    userRepository.findUsersByOauth2Id(oauth2User.getName())
-                            .orElseThrow(() -> new OAuth2AuthenticationException("User not found after registration/update"));
+                    userRepository.findUsersByOauth2Id(oidcUser.getName())
+                            .orElseThrow(() -> new OAuth2AuthenticationException("User not found after registration"));
 
-            return new CustomOAuth2User(oauth2User, internalUser.getId(), internalUser.getRole());
+            return new CustomOAuth2User(oidcUser, internalUser.getId(), internalUser.getRole());
         };
     }
+
+
+
+    @Bean
+    public OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
+        return userRequest -> {
+            OidcUser oidcUser = new OidcUserService().loadUser(userRequest);
+
+            userService.registerOAuthUser(oidcUser);
+
+            org.mosesidowu.onlinepollingsystem.data.models.User internalUser =
+                    userRepository.findUsersByOauth2Id(oidcUser.getName())
+                            .orElseThrow(() -> new OAuth2AuthenticationException("User not found after registration"));
+
+            return new CustomOAuth2User(oidcUser, internalUser.getId(), internalUser.getRole());
+        };
+    }
+
+
 
     @Bean
     public AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler() {
-        return new AuthenticationSuccessHandler() {
-            @Override
-            public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-                CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        return (request, response, authentication) -> {
+            CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
-                Authentication jwtAuth = new UsernamePasswordAuthenticationToken(
-                        customOAuth2User.getUserId(),
-                        null,
-                        customOAuth2User.getAuthorities()
-                );
-                String token = jwtTokenProvider.generateToken(jwtAuth);
+            String token = jwtTokenProvider.generateToken(
+                    customOAuth2User.getUserId(),
+                    customOAuth2User.getAuthorities()
+            );
 
-                String redirectUrl = "http://localhost:8086/oauth2/redirect?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8.toString());
-                response.sendRedirect(redirectUrl);
-            }
+            Cookie cookie = new Cookie("access_token", token);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setPath("/");
+            cookie.setMaxAge((int) (jwtTokenProvider.getJwtExpirationInMs() / 1000)); // expiration in seconds
+            response.addCookie(cookie);
+
+            response.sendRedirect("http://localhost:5173/oauth2/redirect");
         };
     }
+
 
     @Bean
     public LogoutSuccessHandler logoutSuccessHandler() {
         SimpleUrlLogoutSuccessHandler handler = new SimpleUrlLogoutSuccessHandler();
-        handler.setDefaultTargetUrl("http://localhost:3000/login");
+        handler.setDefaultTargetUrl("http://localhost:5173/login");
         return handler;
     }
 
