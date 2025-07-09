@@ -3,8 +3,7 @@ package org.mosesidowu.onlinepollingsystem.controller;
 import lombok.RequiredArgsConstructor;
 
 import org.mosesidowu.onlinepollingsystem.dtos.responses.UserResponseDTO;
-import org.mosesidowu.onlinepollingsystem.security.JwtTokenProvider;
-import org.mosesidowu.onlinepollingsystem.services.IUserService;
+import org.mosesidowu.onlinepollingsystem.services.userService.IUserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;

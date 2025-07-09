@@ -1,18 +1,15 @@
 package org.mosesidowu.onlinepollingsystem.security;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import org.mosesidowu.onlinepollingsystem.config.CustomOAuth2User;
-import org.mosesidowu.onlinepollingsystem.data.models.Role;
 import org.mosesidowu.onlinepollingsystem.data.repository.UserRepository;
-import org.mosesidowu.onlinepollingsystem.services.IUserService;
+import org.mosesidowu.onlinepollingsystem.services.userService.IUserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -26,19 +23,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Configuration
 @EnableWebSecurity
@@ -91,7 +81,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of("https://localhost:3000", "https://localhost:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
@@ -129,8 +119,7 @@ public class SecurityConfig {
 
             userService.registerOAuthUser(oidcUser);
 
-            org.mosesidowu.onlinepollingsystem.data.models.User internalUser =
-                    userRepository.findUsersByOauth2Id(oidcUser.getName())
+            var internalUser = userRepository.findUsersByOauth2Id(oidcUser.getName())
                             .orElseThrow(() -> new OAuth2AuthenticationException("User not found after registration"));
 
             return new CustomOAuth2User(oidcUser, internalUser.getId(), internalUser.getRole());
@@ -156,7 +145,7 @@ public class SecurityConfig {
             cookie.setMaxAge((int) (jwtTokenProvider.getJwtExpirationInMs() / 1000)); // expiration in seconds
             response.addCookie(cookie);
 
-            response.sendRedirect("http://localhost:5173/oauth2/redirect");
+            response.sendRedirect("https://localhost:5173/oauth2/redirect");
         };
     }
 
@@ -164,7 +153,7 @@ public class SecurityConfig {
     @Bean
     public LogoutSuccessHandler logoutSuccessHandler() {
         SimpleUrlLogoutSuccessHandler handler = new SimpleUrlLogoutSuccessHandler();
-        handler.setDefaultTargetUrl("http://localhost:5173/login");
+        handler.setDefaultTargetUrl("https://localhost:5173/login");
         return handler;
     }
 

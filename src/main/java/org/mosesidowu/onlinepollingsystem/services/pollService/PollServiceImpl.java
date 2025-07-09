@@ -1,4 +1,4 @@
-package org.mosesidowu.onlinepollingsystem.services;
+package org.mosesidowu.onlinepollingsystem.services.pollService;
 
 import org.mosesidowu.onlinepollingsystem.dtos.requests.PollRequestDTO;
 import org.mosesidowu.onlinepollingsystem.dtos.responses.PollResponseDTO;
