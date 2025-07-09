@@ -1,4 +1,4 @@
-package org.mosesidowu.onlinepollingsystem.services;
+package org.mosesidowu.onlinepollingsystem.services.jwtService;
 
 import org.springframework.stereotype.Service;
 

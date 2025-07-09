@@ -1,12 +1,16 @@
-package org.mosesidowu.onlinepollingsystem.services;
+package org.mosesidowu.onlinepollingsystem.services.userService;
 
 import lombok.RequiredArgsConstructor;
 import org.mosesidowu.onlinepollingsystem.data.models.Role;
 import org.mosesidowu.onlinepollingsystem.data.models.User;
 import org.mosesidowu.onlinepollingsystem.data.repository.UserRepository;
+import org.mosesidowu.onlinepollingsystem.dtos.requests.EmailRequest;
 import org.mosesidowu.onlinepollingsystem.dtos.responses.UserResponseDTO;
 import org.mosesidowu.onlinepollingsystem.exception.UserNotFoundException;
 import org.mosesidowu.onlinepollingsystem.security.JwtTokenProvider;
+import org.mosesidowu.onlinepollingsystem.services.emailService.EmailService;
+import org.mosesidowu.onlinepollingsystem.services.emailService.EmailServiceImpl;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +24,16 @@ public class UserServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EmailService emailService;
+
 
     @Override
     public UserResponseDTO registerOAuthUser(OAuth2User oauth2User) {
         getOauthResponse result = extractOauthInfo(oauth2User);
         User user = confirmRegisteredUser(result);
         User savedUser = userRepository.save(user);
+
+        emailService.sendEmail(savedUser.getEmail());
 
         return getRegisteredUserResponse(savedUser);
     }
