@@ -1,6 +1,5 @@
-package org.mosesidowu.onlinepollingsystem.services;
+package org.mosesidowu.onlinepollingsystem.services.userService;
 
-import org.mosesidowu.onlinepollingsystem.data.models.User;
 import org.mosesidowu.onlinepollingsystem.dtos.responses.UserResponseDTO;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
