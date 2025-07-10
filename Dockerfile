@@ -1,15 +1,12 @@
-# Use OpenJDK base image
-FROM openjdk:17-jdk-slim
-VOLUME /tmp
-
-# Set working directory
+# ------------ Stage 1: Build the application ----------------
+FROM maven:3.9.4-eclipse-temurin-21 AS build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copy the JAR file into the image (replace with your actual JAR name)
-COPY target/OnlinePollingSystem-0.0.1-SNAPSHOT.jar app.jar
-
-# Expose the port Spring Boot uses
+# ------------ Stage 2: Run the application ------------------
+FROM eclipse-temurin:21-jdk
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8086
-
-# Run the app
 ENTRYPOINT ["java", "-jar", "app.jar"]
