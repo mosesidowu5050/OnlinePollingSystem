@@ -13,10 +13,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
-    private final JavaMailSender javaMailSender;
+    private JavaMailSender javaMailSender;
 
     @Value("${spring.mail.username}")
     private String senderEmail;
+
+    public EmailServiceImpl(JavaMailSender javaMailSender, String senderEmail) {
+        this.javaMailSender = javaMailSender;
+        this.senderEmail = senderEmail;
+    }
 
     @Override
     public void sendEmail(String emailRequest) {

@@ -1,7 +1,8 @@
 package org.mosesidowu.onlinepollingsystem.security;
 
 
-import jdk.jshell.spi.ExecutionControl;
+
+import lombok.RequiredArgsConstructor;
 import org.mosesidowu.onlinepollingsystem.data.models.User;
 import org.mosesidowu.onlinepollingsystem.data.repository.UserRepository;
 import org.mosesidowu.onlinepollingsystem.exception.UserException;
@@ -16,11 +17,14 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    @Autowired
     private UserRepository userRepository;
 
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

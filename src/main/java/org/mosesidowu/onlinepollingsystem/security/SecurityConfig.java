@@ -1,6 +1,7 @@
 package org.mosesidowu.onlinepollingsystem.security;
 
 import jakarta.servlet.http.Cookie;
+import lombok.RequiredArgsConstructor;
 import org.mosesidowu.onlinepollingsystem.config.CustomOAuth2User;
 import org.mosesidowu.onlinepollingsystem.data.repository.UserRepository;
 import org.mosesidowu.onlinepollingsystem.services.userService.IUserService;
@@ -32,11 +33,12 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserRepository userRepository;
-    private final IUserService userService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private UserRepository userRepository;
+    private IUserService userService;
+    private JwtTokenProvider jwtTokenProvider;
 
 
 

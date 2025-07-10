@@ -22,9 +22,14 @@ import static org.mosesidowu.onlinepollingsystem.util.UserMapper.*;
 @RequiredArgsConstructor
 public class UserServiceImpl implements IUserService {
 
-    private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final EmailService emailService;
+    private UserRepository userRepository;
+    private EmailService emailService;
+
+    public UserServiceImpl(UserRepository userRepository,
+                           EmailService emailService) {
+        this.userRepository = userRepository;
+        this.emailService = emailService;
+    }
 
 
     @Override

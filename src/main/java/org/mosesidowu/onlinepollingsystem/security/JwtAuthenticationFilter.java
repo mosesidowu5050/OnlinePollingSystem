@@ -23,9 +23,14 @@ import java.util.Optional;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
-    private final JwtTokenProvider jwtTokenProvider;
-    private final UserRepository userRepository;
+    private JwtTokenProvider jwtTokenProvider;
+    private UserRepository userRepository;
 
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider,
+                                   UserRepository userRepository) {
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.userRepository = userRepository;
+    }
 
 
     @Override
