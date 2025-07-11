@@ -19,9 +19,9 @@ public class MailConfiguration {
 
     @Value("${spring.mail.protocol}")
     private String mailProtocol;
-    @Value("${spring.mail.password}")
+    @Value("${MAIL_PASSWORD}")
     private String mailPassword;
-    @Value("${spring.mail.username}")
+    @Value("${MAIL_USERNAME}")
     private String mailUsername;
 
 
@@ -38,7 +38,7 @@ public class MailConfiguration {
         Properties props = javaMailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true"); // ✅ Use STARTTLS
+        props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.starttls.required", "true");
 
         return javaMailSender;

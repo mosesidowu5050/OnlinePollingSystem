@@ -20,7 +20,6 @@ public class OnlinePollingSystemApplication {
             System.out.println("DEBUG: Value of SPRING_DATASOURCE_USERNAME: " + System.getenv("SPRING_DATASOURCE_USERNAME"));
             System.out.println("DEBUG: Value of SPRING_DATASOURCE_PASSWORD: " + System.getenv("SPRING_DATASOURCE_PASSWORD"));
             System.out.println("DEBUG: Value of PORT: " + System.getenv("PORT"));
-            System.out.println("DEBUG: Value of spring.datasource.url property: " + System.getProperty("spring.datasource.url"));
         }
     }
 }
